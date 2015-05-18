@@ -1,0 +1,11 @@
+# SQL information
+username: root
+password: password
+url: jdbc:mysql://127.0.0.1:3306/buxville
+
+# Taxes
+taxpercent: 0.05
+taxeamount: 5
+taxetype:  Percent # Amount, Percent
+enableautotax: true
+timedelay: 1
