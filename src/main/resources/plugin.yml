@@ -1,3 +1,11 @@
 name: BuxTaxCollector
 main: net.buxville.nug700.BuxTaxCollector.BuxTaxCollector
 version: 1.0
+commands:
+   taxCollector:
+    description: Command to manage taxes.
+permissions:
+   BuxTaxCollector.Admin:
+    description: Gives access to admin commands
+   BuxTaxCollector.taxee:
+    description: Gives access to have taxes deducted from your account.

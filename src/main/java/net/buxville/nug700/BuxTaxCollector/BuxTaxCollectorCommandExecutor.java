@@ -20,6 +20,9 @@ public class BuxTaxCollectorCommandExecutor implements CommandExecutor {
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		boolean isConsole = (sender instanceof ConsoleCommandSender);
+		if (!isConsole && !((Player)sender).hasPermission("BuxTaxCollector.Admin"))
+			return false;
 		
 		if (cmd.getName().equalsIgnoreCase("taxCollector"))
 		{
@@ -37,12 +40,18 @@ public class BuxTaxCollectorCommandExecutor implements CommandExecutor {
 					plugin.TaxPlayer(plugin.getServer().getPlayer(player));
 				}
 			}
-			else if (args[0].equalsIgnoreCase("setAmount"))
+			else if (args.length == 2 && args[0].equalsIgnoreCase("setAmount"))
 				plugin.SetTaxAmount(Integer.parseInt(args[1]));
-			else if (args[0].equalsIgnoreCase("setPercent"))
+			else if (args.length == 2 && args[0].equalsIgnoreCase("setPercent"))
 				plugin.SetTaxPercent(Integer.parseInt(args[1]));
-			else if (args[0].equalsIgnoreCase("setType"))
+			else if (args.length == 2 && args[0].equalsIgnoreCase("setType"))
 				plugin.SetTaxType(TaxType.valueOf(args[1]));
+			else if (args.length == 2 && args[0].equalsIgnoreCase("setAutoEnabled"))
+				plugin.SetAutoTaxEnabled(Boolean.parseBoolean(args[1]));
+			else if (args.length == 2 && args[0].equalsIgnoreCase("setAutoDelay"))
+				plugin.SetAutoTaxDelay(Integer.parseInt(args[1]));
+			else return false;
+			return true;
 			}
 			catch(Exception e){
 				e.printStackTrace();

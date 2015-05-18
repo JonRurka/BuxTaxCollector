@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 import net.milkbowl.vault.economy.Economy;
 
@@ -33,6 +36,9 @@ public class BuxTaxCollector extends JavaPlugin {
 	boolean enableAutoTax;
 	int timeDelay;
 	int scheduleID;
+	String username;
+	String password;
+	String url;
 	
 	public void onEnable()
 	{
@@ -45,8 +51,16 @@ public class BuxTaxCollector extends JavaPlugin {
 			return;
 		}
 		
+		username = getConfig().getString("username");
+		password = getConfig().getString("password");
+		url = getConfig().getString("url");
+		
 		reloadValues();
-		TaxAllPlayers();
+		
+		if (enableAutoTax)
+			InitAutoTax(timeDelay);
+		
+		this.getCommand("taxCollector").setExecutor(new BuxTaxCollectorCommandExecutor(this));
 	}
 	
 	public void onDisable()
@@ -59,6 +73,8 @@ public class BuxTaxCollector extends JavaPlugin {
 		GetTaxPercent();
 		GetTaxAmount();
 		GetTaxType();
+		GetAutoTaxDelay();
+		GetAutoTaxEnabled();
 	}
 	
 	public void SetTaxPercent(int newPercent)
@@ -77,21 +93,31 @@ public class BuxTaxCollector extends JavaPlugin {
 	
 	public void SetAutoTaxEnabled(boolean enabled)
 	{
+		SetAutoTaxEnabled(enabled, true);
+	}
+	
+	public void SetAutoTaxEnabled(boolean enabled, boolean run)
+	{
 		enableAutoTax = enabled;
 		getConfig().set("enableautotax", enabled);
 		SaveConfigValues();
-		if (!enableAutoTax)
-			CancelAutoTax();
+		if (enableAutoTax)
+			if (run) ResetAutoTax();
 		else
-			ResetAutoTax();
+			CancelAutoTax();
 	}
 	
 	public void SetAutoTaxDelay(int newDelay)
 	{
+		SetAutoTaxDelay(newDelay, true);
+	}
+	
+	public void SetAutoTaxDelay(int newDelay, boolean run){
 		timeDelay = newDelay;
 		getConfig().set("timedelay", newDelay);
 		SaveConfigValues();
-		ResetAutoTax();
+		if (run)
+			ResetAutoTax();
 	}
 	
 	public void SetTaxType(TaxType newType)
@@ -147,11 +173,14 @@ public class BuxTaxCollector extends JavaPlugin {
 	
 	public void TaxPlayer(Player player)
 	{
-		double balance = econ.getBalance(player);
-		if (taxType == TaxType.Amount)
-			econ.withdrawPlayer(player, taxPercent);
-		else
-			econ.withdrawPlayer(player, (balance * taxPercent));
+		if (player.hasPermission("BuxTaxCollector.taxee"))
+		{
+			double balance = econ.getBalance(player);
+			if (taxType == TaxType.Amount)
+				econ.withdrawPlayer(player, taxPercent);
+			else
+				econ.withdrawPlayer(player, (balance * taxPercent));
+		}
 	}
 
 	public void ResetAutoTax()
